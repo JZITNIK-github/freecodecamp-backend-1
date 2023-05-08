@@ -17,10 +17,19 @@ app.use(express.json())
 app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
+function isNumeric(str) {
+  if (typeof str != "string") return false
+  return !isNaN(str) &&
+         !isNaN(parseFloat(str))
+}
+app.get("/api/:date?",function (req,res) {
+  const dateVal = req.params.date
+  if (isNumeric(dateVal)){ date = new Date(+dateVal) }
+  else if (dateVal === undefined){date = new Date()}
+  else { date = new Date(req.params.date) }
 
-app.get("/api/:date",function (req,res) {
-  const date = new Date(req.params.date)
-  res.json({unix:date.getTime(),utc:date.toUTCString()})
+  if (isNaN(date.getTime())){ res.json({ error : "Invalid Date" })}
+  else { res.json({unix:date.getTime(),utc:date.toUTCString()})}
 })
 
 
@@ -31,6 +40,6 @@ app.get("/api/hello", function (req, res) {
 
 
 // listen for requests :)
-var listener = app.listen(process.env.PORT, function () {
+var listener = app.listen(process.env.PORT || 8001, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
